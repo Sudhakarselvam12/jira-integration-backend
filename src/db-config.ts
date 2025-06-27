@@ -1,5 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import * as dotenv from 'dotenv';
+dotenv.config();
 // import { Project } from './models/Project';
 // import { Issue } from './models/Issue';
 // import { IssueHistory } from './models/IssueHistory';

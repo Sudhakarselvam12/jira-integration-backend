@@ -13,7 +13,7 @@ export class InitialSchema1690000000000 implements MigrationInterface {
           name: 'status',
           type: 'varchar',
           isNullable: false,
-          default: 'active',
+          default: `'active'`,
         },
         { name: 'created_at', type: 'timestamp', default: 'now()' }
       ]
