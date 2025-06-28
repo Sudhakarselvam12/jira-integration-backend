@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import * as dotenv from 'dotenv';
 dotenv.config();
-// import { Project } from './models/Project';
-// import { Issue } from './models/Issue';
-// import { IssueHistory } from './models/IssueHistory';
+import { Project } from './models/Project';
+import { Issue } from './models/Issue';
+import { AuditTrail } from './models/AuditTrail';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -16,5 +16,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   migrations: ['src/migrations/*.ts'],
   logging: true,
-  // entities: [Project, Issue, IssueHistory],
+  entities: [Project, Issue, AuditTrail],
 });
