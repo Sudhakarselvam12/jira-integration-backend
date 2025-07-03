@@ -4,7 +4,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node src/index.ts",
+    "start": "ts-node src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "lint": "eslint src --ext .ts",
     "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d src/db-config.ts"
