@@ -8,8 +8,11 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
   },
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
   ],

@@ -6,6 +6,8 @@ import { Project } from './models/Project';
 import { Issue } from './models/Issue';
 import { AuditTrail } from './models/AuditTrail';
 
+const isCompiled = __dirname.includes('dist');
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST || 'localhost',
@@ -14,7 +16,7 @@ export const AppDataSource = new DataSource({
   password: process.env.DB_PASS || 'password',
   database: process.env.DB_NAME || 'jira_tool',
   synchronize: false,
-  migrations: ['src/migrations/*.ts'],
+  migrations: [isCompiled ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
   logging: true,
   entities: [Project, Issue, AuditTrail],
 });

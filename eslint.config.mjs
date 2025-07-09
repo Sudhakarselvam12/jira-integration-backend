@@ -18,6 +18,15 @@ export default [
       quotes: ['error', 'single'],
       '@typescript-eslint/no-unused-vars': ['warn'],
       'no-console': 'off',
+    '@typescript-eslint/explicit-function-return-type': [
+      'error',
+      {
+        allowExpressions: true,
+        allowTypedFunctionExpressions: true,
+        allowHigherOrderFunctions: true,
+        allowConciseArrowFunctionExpressionsStartingWithVoid: true,
+      },
+    ],
     },
   },
   {

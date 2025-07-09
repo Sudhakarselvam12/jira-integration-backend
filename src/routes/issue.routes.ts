@@ -3,6 +3,6 @@ import { getAllIssues } from '../controllers/issue.controller';
 
 const router = Router();
 
-router.get('/issues', getAllIssues);
+router.get('/', getAllIssues);
 
 export default router;

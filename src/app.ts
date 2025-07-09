@@ -7,7 +7,7 @@ app.use(express.json());
 
 app.use('/api', routes);
 
-app.get('/', (_req, res) => {
+app.get('/', (_req, res): void => {
   res.send('Server is running...');
 });
 

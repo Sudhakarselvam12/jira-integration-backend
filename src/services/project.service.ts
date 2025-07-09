@@ -4,7 +4,8 @@ import { Project } from '../models/Project';
 const projectRepo = AppDataSource.getRepository(Project);
 
 export const projectService = {
-  async getAllProjects() {
-    return projectRepo.find();
+  async getAllProjects(): Promise<Project[]> {
+    const result = await projectRepo.find();
+    return result;
   },
 };
