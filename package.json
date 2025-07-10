@@ -9,14 +9,16 @@
     "start:dev": "nodemon --watch src --exec ts-node src/server.ts",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "lint": "eslint src --ext .ts",
-    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d src/db-config.ts"
+    "migration:generate": "npx typeorm migration:generate -d dist/db-config.js",
+    "migration:run": "npx typeorm migration:run -d dist/db-config.js",
+    "migration:revert": "npx typeorm migration:revert -d dist/db-config.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "@types/express": "5.0.3",
-    "axios": "1.7.2",
+    "axios": "^1.7.2",
     "cors": "2.8.5",
     "dotenv": "16.4.5",
     "express": "4.21.2",
