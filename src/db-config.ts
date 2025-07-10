@@ -5,6 +5,7 @@ dotenv.config();
 import { Project } from './models/Project';
 import { Issue } from './models/Issue';
 import { AuditTrail } from './models/AuditTrail';
+import { SyncMetadata } from './models/SyncMetadata';
 
 const isCompiled = __dirname.includes('dist');
 
@@ -18,5 +19,5 @@ export const AppDataSource = new DataSource({
   synchronize: false,
   migrations: [isCompiled ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
   logging: true,
-  entities: [Project, Issue, AuditTrail],
+  entities: [Project, Issue, AuditTrail, SyncMetadata],
 });
