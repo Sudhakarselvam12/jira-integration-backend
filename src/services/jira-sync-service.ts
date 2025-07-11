@@ -1,14 +1,8 @@
 import axios from 'axios';
 import { projectService } from './project.service';
 import { syncMetadataService } from './sync-metadata.service';
-
-interface JiraProject {
-id: string;
-key: string;
-name: string;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-[key: string]: any;
-}
+import { JiraProject } from '../types/jira.types';
+import { issueService } from './issue.service';
 
 const jiraDomain = process.env.JIRA_BASE_URL;
 const jiraEmail = process.env.JIRA_USER_MAIL;
@@ -42,47 +36,35 @@ export const JiraSyncService = {
     }
   },
 
-  // async syncIssues(): Promise<void> {
-  //   const projectRepo = AppDataSource.getRepository(Project);
-  //   const issueRepo = AppDataSource.getRepository(Issue);
-  //   const projects = await projectRepo.find();
+  async syncIssues(): Promise<void> {
+  const lastSyncedAt = await syncMetadataService.getOrCreateLastSyncDate('issue');
 
-  //   for (const project of projects) {
-  //     const jql = `project=${project.jiraProjectKey}`;
-  //     const url = `https://${jiraDomain}/rest/api/3/search?jql=${encodeURIComponent(jql)}`;
+  const jql = lastSyncedAt.lastSyncedAt
+    ? `updated >= "${lastSyncedAt.lastSyncedAt.toISOString().split('T')[0]}"`
+    : '';
 
-  //     try {
-  //       const response = await axios.get(url, { headers: authHeader });
-  //       const issues = response.data.issues;
+  console.log('Syncing issues since:', lastSyncedAt.lastSyncedAt);
 
-  //       for (const jiraIssue of issues) {
-  //         const existing = await issueRepo.findOne({
-  //           where: { jiraId: jiraIssue.id },
-  //         });
+  let startAt = 0;
+  const maxResults = 100;
 
-  //         if (!existing) {
-  //           const newIssue = issueRepo.create({
-  //             jiraId: jiraIssue.id,
-  //             title: jiraIssue.fields.summary,
-  //             description: jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '',
-  //             type: jiraIssue.fields.issuetype.name,
-  //             status: jiraIssue.fields.status.name,
-  //             priority: jiraIssue.fields.priority?.name || 'Medium',
-  //             assignee: jiraIssue.fields.assignee?.displayName || 'Unassigned',
-  //             reporter: jiraIssue.fields.reporter?.displayName || 'Unknown',
-  //             estimatedTime: (jiraIssue.fields.timeoriginalestimate || 0) / 3600,
-  //             spentTime: (jiraIssue.fields.timespent || 0) / 3600,
-  //             project,
-  //           });
+  while (true) {
+    const url = `${jiraDomain}/rest/api/3/search?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${maxResults}`;
+    const response = await axios.get(url, { headers: authHeader });
 
-  //           await issueRepo.save(newIssue);
-  //         }
-  //       }
+    const issues = response.data.issues;
+    if (!issues.length) break;
 
-  //       console.log(`✔ Synced ${issues.length} issues for project ${project.jiraProjectKey}`);
-  //     } catch (err) {
-  //       console.error(`❌ Failed to sync issues for project ${project.jiraProjectKey}:`, err.message);
-  //     }
-  //   }
-  // },
+    for (const jiraIssue of issues) {      
+      await issueService.upsertIssue(jiraIssue);
+    }
+
+    if (issues.length < maxResults) break;
+    startAt += maxResults;
+  }
+
+  syncMetadataService.updateLastSync('issue');
+
+  console.log('Jira issues sync complete');
+  },
 };

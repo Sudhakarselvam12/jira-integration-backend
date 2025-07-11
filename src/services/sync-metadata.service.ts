@@ -20,4 +20,15 @@ export const syncMetadataService = {
       await syncRepo.save(syncRepo.create({ entity, lastSyncedAt: now }));
     }
   },
+
+  async getOrCreateLastSyncDate(entity: string): Promise<SyncMetadata | null> {
+    const metaData = await syncRepo.findOne({ where: { entity } });
+    if (metaData) {
+      return metaData;
+    } else {
+      const newMetaData = syncRepo.create({ entity, lastSyncedAt: null });
+      await syncRepo.save(newMetaData);
+      return newMetaData;
+    }
+  }
 };
