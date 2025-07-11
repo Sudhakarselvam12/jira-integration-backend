@@ -1,15 +1,8 @@
 import { AppDataSource } from '../db-config';
 import { Project } from '../models/Project';
+import { JiraProject } from '../types/jira.types';
 
 const projectRepo = AppDataSource.getRepository(Project);
-
-interface JiraProject {
-id: string;
-key: string;
-name: string;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-[key: string]: any;
-}
 
 export const projectService = {
   async getAllProjects(): Promise<Project[]> {

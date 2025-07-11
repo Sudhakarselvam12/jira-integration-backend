@@ -12,4 +12,18 @@ router.post('/projects', async (req, res) => {
   }
 });
 
+router.post('/issues', async (req, res) => {
+  try {
+    await JiraSyncService.syncIssues();
+    res.status(200).json({ message: 'Issues synced successfully' });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      message: 'Failed to sync issues',
+      error: error?.message || 'Internal server error',
+    });
+  }
+});
+
 export default router;
