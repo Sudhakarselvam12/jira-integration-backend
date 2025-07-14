@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface JiraProject {
   id: string;
+  jiraId: number;
   key: string;
   name: string;
   [key: string]: any;

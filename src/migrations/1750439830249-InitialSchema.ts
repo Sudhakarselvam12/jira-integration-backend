@@ -13,7 +13,7 @@ export class InitialSchema1690000000000 implements MigrationInterface {
           name: 'status',
           type: 'varchar',
           isNullable: false,
-          default: `'active'`,
+          default: '\'active\'',
         },
         { name: 'created_at', type: 'timestamp', default: 'now()' }
       ]
@@ -54,8 +54,8 @@ export class InitialSchema1690000000000 implements MigrationInterface {
         { name: 'entity_type', type: 'varchar' },
         { name: 'entity_id', type: 'int' },
         { name: 'changed_field', type: 'varchar' },
-        { name: 'old_value', type: 'text' },
-        { name: 'new_value', type: 'text' },
+        { name: 'old_value', type: 'text', isNullable: true },
+        { name: 'new_value', type: 'text', isNullable: true },
         { name: 'changed_at', type: 'timestamp', default: 'now()' }
       ]
     }));

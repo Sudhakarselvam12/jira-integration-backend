@@ -12,6 +12,9 @@ export class Project {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ name: 'jira_id' })
+  jiraId: number;
+
   @Column({ name: 'name' })
   name: string;
 

@@ -1,10 +1,11 @@
 import { AppDataSource } from '../db-config';
+import { AuditTrail } from '../models/AuditTrail';
 import { Issue } from '../models/Issue';
 import { Project } from '../models/Project';
 import { JiraIssue } from '../types/jira.types';
 
 const issueRepo = AppDataSource.getRepository(Issue);
-
+const auditRepo = AppDataSource.getRepository(AuditTrail);
 
 export const issueService = {
   async getAllIssues(): Promise<Issue[]> {
@@ -16,6 +17,8 @@ export const issueService = {
     const projectKey = jiraIssue.fields.project.key;
 
     const project = await AppDataSource.getRepository(Project).findOneBy({ jiraProjectKey: projectKey });
+
+    const auditLogs = [];
 
     if (!existing) {
       const newIssue = issueRepo.create({
@@ -34,63 +37,72 @@ export const issueService = {
         projectId: project.id,
       });
       await issueRepo.save(newIssue);
+      auditLogs.push({
+        entityType: 'Issue',
+        entityId: newIssue.id,
+        changedField: 'CREATED',
+        oldValue: null,
+        newValue: JSON.stringify(newIssue),
+        changedAt: new Date(),
+      });
     } else {
       let isUpdated = false;
 
-      if (existing.title !== jiraIssue.fields.summary) {
-        existing.title = jiraIssue.fields.summary;
-        isUpdated = true;
-      }
+      const modifiedIssue : Partial<Issue> = {
+        title: jiraIssue.fields.summary,
+        description: jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '',
+        type: jiraIssue.fields.issuetype?.name || '',
+        status: jiraIssue.fields.status?.name || '',
+        priority: jiraIssue.fields.priority?.name || '',
+        assignee: jiraIssue.fields.assignee?.displayName || '',
+        reporter: jiraIssue.fields.reporter?.displayName || '',
+        estimatedTime: jiraIssue.fields.timeoriginalestimate || 0,
+        spentTime: jiraIssue.fields.timespent || 0,
+        updatedAt: new Date(jiraIssue.fields.updated),
+      };
 
-      if (existing.description !== (jiraIssue.fields.description || '')) {
-        existing.description = jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '';
-        isUpdated = true;
-      }
+      const fieldsToCheck: Array<keyof Issue> = [
+        'title',
+        'description',
+        'type',
+        'status',
+        'priority',
+        'assignee',
+        'reporter',
+        'estimatedTime',
+        'spentTime',
+      ];
 
-      if (existing.type !== (jiraIssue.fields.issuetype?.name || '')) {
-        existing.type = jiraIssue.fields.issuetype?.name || '';
-        isUpdated = true;
-      }
+      for (const field of fieldsToCheck) {
+        if(existing[field] !== modifiedIssue[field]) {
+          const oldValue = existing[field];
+          const newValue = modifiedIssue[field];
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (existing as any)[field] = newValue;
+          isUpdated = true;
 
-      if (existing.status !== (jiraIssue.fields.status?.name || '')) {
-        existing.status = jiraIssue.fields.status?.name || '';
-        isUpdated = true;
+          auditLogs.push({
+            entityType: 'Issue',
+            entityId: existing.id,
+            changedField: field,
+            oldValue: oldValue ? String(oldValue) : null,
+            newValue: newValue ? String(newValue) : null,
+            changedAt: new Date(),
+          });
+        }
       }
-
-      if (existing.priority !== (jiraIssue.fields.priority?.name || '')) {
-        existing.priority = jiraIssue.fields.priority?.name || '';
-        isUpdated = true;
-      }
-
-      if (existing.assignee !== (jiraIssue.fields.assignee?.displayName || '')) {
-        existing.assignee = jiraIssue.fields.assignee?.displayName || '';
-        isUpdated = true;
-      }
-
-      if (existing.reporter !== (jiraIssue.fields.reporter?.displayName || '')) {
-        existing.reporter = jiraIssue.fields.reporter?.displayName || '';
-        isUpdated = true;
-      }
-
-      if (existing.estimatedTime !== (jiraIssue.fields.timeoriginalestimate || 0)) {
-        existing.estimatedTime = jiraIssue.fields.timeoriginalestimate || 0;
-        isUpdated = true;
-      }
-
-      if (existing.spentTime !== (jiraIssue.fields.timespent || 0)) {
-        existing.spentTime = jiraIssue.fields.timespent || 0;
-        isUpdated = true;
-      }
-
-      const jiraUpdatedAt = new Date(jiraIssue.fields.updated);
-      if (existing.updatedAt.getTime() !== jiraUpdatedAt.getTime()) {
-        existing.updatedAt = jiraUpdatedAt;
-        isUpdated = true;
+      if(!isUpdated) {
+        return;
       }
 
       if (isUpdated) {
-      await issueRepo.save(existing);
+        existing.updatedAt = new Date(jiraIssue.fields.updated);
+        await issueRepo.save(existing);
       }
+    }
+    
+    if(auditLogs.length > 0) {
+      await auditRepo.save(auditLogs);
     }
   },
 };
