@@ -5,6 +5,8 @@ const auditRepo = AppDataSource.getRepository(AuditTrail);
 
 export const auditTrailService = {
   async getAuditTrailData(): Promise<AuditTrail[]> {
-    return auditRepo.find();
+    return auditRepo.find({
+      order: { changedAt: 'DESC' },
+    });
   },
 };

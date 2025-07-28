@@ -1,3 +1,4 @@
+import { get } from 'http';
 import { AppDataSource } from '../db-config';
 import { AuditTrail } from '../models/AuditTrail';
 import { Project } from '../models/Project';
@@ -8,8 +9,18 @@ const auditRepo = AppDataSource.getRepository(AuditTrail);
 
 export const projectService = {
   async getAllProjects(): Promise<Project[]> {
-    const result = await projectRepo.find();
+    const result = await projectRepo.find({
+      order: { createdAt: 'DESC' },
+    });
     return result;
+  },
+
+  async getProjectById(id: number): Promise<Project | null> {
+    const project = await projectRepo.findOne({ where: { id } });
+    if (!project) {
+      return null;
+    }
+    return project;
   },
 
   async upsertProjects(jiraProject: JiraProject, lead: string): Promise<void> {

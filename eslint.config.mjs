@@ -1,35 +1,41 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-
-export default [
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
+export default eslint.config([
   {
-    files: ['**/*.ts'],
+    files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tseslint.parser,
       parserOptions: {
         sourceType: 'module',
         project: './tsconfig.json',
       },
+      globals: {
+        ...globals.node,
+      },
     },
     rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended[0].rules,
       semi: ['error', 'always'],
       quotes: ['error', 'single'],
-      '@typescript-eslint/no-unused-vars': ['warn'],
       'no-console': 'off',
-    '@typescript-eslint/explicit-function-return-type': [
-      'error',
-      {
-        allowExpressions: true,
-        allowTypedFunctionExpressions: true,
-        allowHigherOrderFunctions: true,
-        allowConciseArrowFunctionExpressionsStartingWithVoid: true,
-      },
-    ],
+      '@typescript-eslint/no-unused-vars': ['warn'],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowConciseArrowFunctionExpressionsStartingWithVoid: true,
+        },
+      ],
+      'no-multi-spaces': 'error',
+      'no-trailing-spaces': 'error',
+      'no-irregular-whitespace': 'error',
+      'space-in-parens': ['error', 'never'],
+      'space-before-function-paren': ['error', 'never'],
+      'keyword-spacing': ['error', { before: true, after: true }],
     },
   },
   {
-    ignores: ['dist/**', 'node_modules/**']
+    ignores: ['dist/**', 'node_modules/**'],
   },
-];
+]);

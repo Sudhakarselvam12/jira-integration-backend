@@ -9,7 +9,7 @@ const auditRepo = AppDataSource.getRepository(AuditTrail);
 
 export const issueService = {
   async getAllIssues(): Promise<Issue[]> {
-    return issueRepo.find();
+    return issueRepo.find({ order: { updatedAt: 'DESC' } });  
   },
 
   async upsertIssue(jiraIssue: JiraIssue): Promise<void> {
