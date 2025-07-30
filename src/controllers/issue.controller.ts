@@ -4,13 +4,23 @@ import { projectService } from '../services/project.service';
 
 export const getAllIssues = async (req: Request, res: Response): Promise<void> => {
   try {
+    const { jiraId, title, project, type, status, priority, reporter } = req.query;
+
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
 
-    const issues = await issueService.getAllIssues();
+    const issues = await issueService.getAllIssues({
+      jiraId: jiraId as string || '',
+      title: title as string || '',
+      project: project as string || '',
+      types: type as string || '',
+      status: status as string || '',
+      priority: priority as string || '',
+      reporter: reporter as string || '',
+    });
     if (!issues || issues.length === 0) {
-      res.status(404).json({ message: 'No issues found' });
+      res.json({});
       return;
     }
     let result = await Promise.all(issues.map(async (issue) => {
@@ -32,3 +42,14 @@ export const getAllIssues = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 };
+
+export const getFilterValues = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const filterValues = await issueService.getFilterValues();
+
+    res.json(filterValues);
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+    return;
+  }
+}

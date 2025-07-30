@@ -6,17 +6,57 @@ import { JiraIssue } from '../types/jira.types';
 
 const issueRepo = AppDataSource.getRepository(Issue);
 const auditRepo = AppDataSource.getRepository(AuditTrail);
+const projectRepo = AppDataSource.getRepository(Project);
+
+type IssueFilter = {
+  jiraId: string;
+  title: string;
+  types: string;
+  priority: string;
+  status: string;
+  project: string;
+  reporter: string;
+};
 
 export const issueService = {
-  async getAllIssues(): Promise<Issue[]> {
-    return issueRepo.find({ order: { updatedAt: 'DESC' } });  
+  async getAllIssues(filters: IssueFilter): Promise<Issue[]> {
+    const query = issueRepo
+      .createQueryBuilder('issue')
+      .leftJoinAndSelect('issue.project', 'project');
+
+    if (filters.jiraId) {
+      query.andWhere('issue.jiraId LIKE :jiraId', { jiraId: `%${filters.jiraId}%` });
+    }
+    if (filters.title) {
+      query.andWhere('issue.title LIKE :title', { title: `%${filters.title}%` });
+    }
+    if (filters.types) {
+      query.andWhere('issue.type = :type', { type: filters.types });
+    }
+    if (filters.status) {
+      query.andWhere('issue.status = :status', { status: filters.status });
+    }
+    if (filters.priority) {
+      query.andWhere('issue.priority = :priority', { priority: filters.priority });
+    }
+    if (filters.reporter) {
+      query.andWhere('issue.reporter = :reporter', { reporter: filters.reporter });
+    }
+    if (filters.project) {
+      query.andWhere('project.name = :project', { project: filters.project });
+    }
+
+    const result = await query
+      .orderBy('issue.updatedAt', 'DESC')
+      .getMany();
+    return result;
   },
 
   async upsertIssue(jiraIssue: JiraIssue): Promise<void> {
     const existing = await issueRepo.findOneBy({ jiraId: jiraIssue.key });
     const projectKey = jiraIssue.fields.project.key;
 
-    const project = await AppDataSource.getRepository(Project).findOneBy({ jiraProjectKey: projectKey });
+    const project = await projectRepo.findOneBy({ jiraProjectKey: projectKey });
 
     const auditLogs = [];
 
@@ -100,9 +140,44 @@ export const issueService = {
         await issueRepo.save(existing);
       }
     }
-    
+
     if(auditLogs.length > 0) {
       await auditRepo.save(auditLogs);
+    }
+  },
+
+  async getFilterValues () {
+    const types = await issueRepo
+      .createQueryBuilder('issue')
+      .select('DISTINCT issue.type', 'type')
+      .getRawMany();
+
+    const statuses = await issueRepo
+      .createQueryBuilder('issue')
+      .select('DISTINCT issue.status', 'status')
+      .getRawMany();
+
+    const priorities = await issueRepo
+      .createQueryBuilder('issue')
+      .select('DISTINCT issue.priority', 'priority')
+      .getRawMany();
+
+    const reporters = await issueRepo
+      .createQueryBuilder('issue')
+      .select('DISTINCT issue.reporter', 'reporter')
+      .getRawMany();
+
+    const projects = await projectRepo
+      .createQueryBuilder('project')
+      .select('DISTINCT project.name', 'name')
+      .getRawMany();
+
+    return {
+      type: types.map(t => t.type),
+      status: statuses.map(s => s.status),
+      priority: priorities.map(p => p.priority),
+      reporter: reporters.map(r => r.reporter),
+      project: projects.map(p => p.name),
     }
   },
 };
