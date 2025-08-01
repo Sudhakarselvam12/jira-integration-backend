@@ -19,6 +19,11 @@ type IssueFilter = {
 };
 
 export const issueService = {
+  async getIssuesCount(): Promise<number> {
+    return await issueRepo.count();
+  },
+
+
   async getAllIssues(filters: IssueFilter): Promise<Issue[]> {
     const query = issueRepo
       .createQueryBuilder('issue')

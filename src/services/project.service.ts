@@ -8,6 +8,10 @@ const projectRepo = AppDataSource.getRepository(Project);
 const auditRepo = AppDataSource.getRepository(AuditTrail);
 
 export const projectService = {
+  async getProjectsCount(): Promise<number> {
+    return await projectRepo.count();
+  },
+
   async getAllProjects(): Promise<Project[]> {
     const result = await projectRepo.find({
       order: { createdAt: 'DESC' },

@@ -11,6 +11,10 @@ type AuditFilter = {
 };
 
 export const auditTrailService = {
+  async getAuditTrailCount(): Promise<number> {
+    return await auditRepo.count();
+  },
+
   async getAuditTrailData(filters: AuditFilter): Promise<AuditTrail[]> {
     const query = auditRepo
       .createQueryBuilder('audit_trail')

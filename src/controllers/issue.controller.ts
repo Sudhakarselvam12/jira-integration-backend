@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { issueService } from '../services/issue.service';
 import { projectService } from '../services/project.service';
+import { syncMetadataService } from '../services/sync-metadata.service';
 
 export const getAllIssues = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -34,9 +35,12 @@ export const getAllIssues = async (req: Request, res: Response): Promise<void> =
     const total = result.length;
     result = result.slice(offset, offset + limit);
 
+    const lastSyncedAt = await syncMetadataService.getLastSync('issue');
+
     res.json({
       data: result,
       count: total,
+      lastSyncedAt,
     });
   } catch (error) {
     res.status(500).json({ error: error.message || 'Internal Server Error' });
@@ -51,5 +55,15 @@ export const getFilterValues = async (req: Request, res: Response): Promise<void
   } catch (error) {
     res.status(500).json({ error: error.message || 'Internal Server Error' });
     return;
+  }
+}
+
+export const getIssuesCount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const count = await issueService.getIssuesCount();
+
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }

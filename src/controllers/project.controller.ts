@@ -24,3 +24,12 @@ export const getAllProjects = async (req: Request, res: Response): Promise<void>
     res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 };
+
+export const getProjectsCount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const count = await projectService.getProjectsCount();
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+}

@@ -43,3 +43,13 @@ export const getFilterValues = async (req: Request, res: Response): Promise<void
     return;
   }
 }
+
+export const getAuditTrailCount = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const count = await auditTrailService.getAuditTrailCount();
+
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
+  }
+}
