@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { projectService } from '../services/project.service';
+import { syncMetadataService } from '../services/sync-metadata.service';
 
 export const getAllProjects = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -16,9 +17,12 @@ export const getAllProjects = async (req: Request, res: Response): Promise<void>
     const total = projects.length;
     projects = projects.slice(offset, offset + limit);
 
+    const lastSyncedAt = await syncMetadataService.getLastSync('project');
+
     res.json({
       data: projects,
       count: total,
+      lastSyncedAt,
     });
   } catch (error) {
     res.status(500).json({ error: error.message || 'Internal Server Error' });
