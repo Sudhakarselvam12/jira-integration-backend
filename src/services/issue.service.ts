@@ -23,8 +23,14 @@ export const issueService = {
     return await issueRepo.count();
   },
 
+  async getAllIssues(): Promise<Issue[]> {
+    const query = issueRepo
+      .createQueryBuilder('issue')
+      .leftJoinAndSelect('issue.project', 'project');
+    return query.getMany();
+  },
 
-  async getAllIssues(filters: IssueFilter): Promise<Issue[]> {
+  async getIssues(filters: IssueFilter): Promise<Issue[]> {
     const query = issueRepo
       .createQueryBuilder('issue')
       .leftJoinAndSelect('issue.project', 'project');

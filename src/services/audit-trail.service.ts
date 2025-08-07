@@ -11,6 +11,13 @@ type AuditFilter = {
 };
 
 export const auditTrailService = {
+  async getAllAuditData(): Promise<AuditTrail[]> {
+    const result = await auditRepo.find({
+      order: { changedAt: 'DESC' },
+    });
+    return result;
+  },
+
   async getAuditTrailCount(): Promise<number> {
     return await auditRepo.count();
   },
