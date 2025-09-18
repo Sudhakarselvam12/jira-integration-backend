@@ -19,7 +19,6 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASS || 'password',
   database: process.env.DB_NAME || 'jira_tool',
-  ssl: true,
   synchronize: false,
   migrations: [isCompiled ? 'dist/migrations/*.js' : 'src/migrations/*.ts'],
   logging: true,
