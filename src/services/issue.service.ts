@@ -64,7 +64,7 @@ export const issueService = {
   },
 
   async upsertIssue(jiraIssue: JiraIssue): Promise<void> {
-    const existing = await issueRepo.findOneBy({ jiraId: jiraIssue.key });
+    const existing = await issueRepo.findOneBy({ jiraId: jiraIssue.id });
     const projectKey = jiraIssue.key;
 
     const project = await projectRepo.findOneBy({ jiraProjectKey: projectKey });

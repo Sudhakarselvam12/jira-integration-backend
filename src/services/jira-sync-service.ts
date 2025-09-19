@@ -45,10 +45,10 @@ export const JiraSyncService = {
 
   console.log('Syncing issues since:', lastSyncedAt.lastSyncedAt);
 
-  let isLast = true;
+  let isLast = false;
   const maxResults = 100;
 
-  while (isLast) {
+  while (!isLast) {
     const url = `${jiraDomain}/rest/api/3/search/jql`;
 
     const response = await axios.post(
@@ -85,7 +85,7 @@ export const JiraSyncService = {
     for (const jiraIssue of issues) {
       await issueService.upsertIssue(jiraIssue);
     }
-    isLast = !response.data.isLast;
+    isLast = response.data.isLast || true;
   }
 
   syncMetadataService.updateLastSync('issue');
