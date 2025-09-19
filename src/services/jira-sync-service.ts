@@ -45,22 +45,47 @@ export const JiraSyncService = {
 
   console.log('Syncing issues since:', lastSyncedAt.lastSyncedAt);
 
-  let startAt = 0;
+  let isLast = true;
   const maxResults = 100;
 
-  while (true) {
-    const url = `${jiraDomain}/rest/api/3/search?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${maxResults}`;
-    const response = await axios.get(url, { headers: authHeader });
+  while (isLast) {
+    const url = `${jiraDomain}/rest/api/3/search/jql`;
+
+    const response = await axios.post(
+      url,
+      {
+        jql,
+        maxResults: maxResults,
+        fields: [
+          "summary",
+          "description",
+          "issuetype",
+          "status",
+          "priority",
+          "assignee",
+          "reporter",
+          "timeoriginalestimate",
+          "timespent",
+          "created",
+          "updated",
+        ],
+      },
+      {
+        headers: {
+          ...authHeader,
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     const issues = response.data.issues;
     if (!issues.length) break;
 
-    for (const jiraIssue of issues) {      
+    for (const jiraIssue of issues) {
       await issueService.upsertIssue(jiraIssue);
     }
-
-    if (issues.length < maxResults) break;
-    startAt += maxResults;
+    isLast = !response.data.isLast;
   }
 
   syncMetadataService.updateLastSync('issue');
