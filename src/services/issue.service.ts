@@ -64,8 +64,12 @@ export const issueService = {
   },
 
   async upsertIssue(jiraIssue: JiraIssue): Promise<void> {
-    const existing = await issueRepo.findOneBy({ jiraId: jiraIssue.id });
-    const projectKey = jiraIssue.key;
+    if(!jiraIssue || !jiraIssue.fields) {
+      console.warn('Invalid Jira issue data:', jiraIssue);
+      return;
+    }
+    const existing = await issueRepo.findOneBy({ jiraId: jiraIssue.key });
+    const projectKey = jiraIssue.fields.project.key;
 
     const project = await projectRepo.findOneBy({ jiraProjectKey: projectKey });
 
@@ -73,7 +77,7 @@ export const issueService = {
 
     if (!existing) {
       const newIssue = issueRepo.create({
-        jiraId: jiraIssue.id,
+        jiraId: jiraIssue.key,
         title: jiraIssue.fields.summary,
         description: jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '',
         type: jiraIssue.fields.issuetype?.name || '',

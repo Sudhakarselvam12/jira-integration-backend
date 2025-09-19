@@ -40,12 +40,13 @@ export const JiraSyncService = {
   const lastSyncedAt = await syncMetadataService.getOrCreateLastSyncDate('issue');
 
   const jql = lastSyncedAt.lastSyncedAt
-    ? `updated >= "${lastSyncedAt.lastSyncedAt.toISOString().split('T')[0]}"`
-    : '';
+    ? `updated >= "${lastSyncedAt.lastSyncedAt.toISOString().split('T')[0]}" order by updated DESC`
+    : 'order by updated DESC';
 
   console.log('Syncing issues since:', lastSyncedAt.lastSyncedAt);
 
   let isLast = false;
+  let nextPageToken = null;
   const maxResults = 100;
 
   while (!isLast) {
@@ -56,7 +57,9 @@ export const JiraSyncService = {
       {
         jql,
         maxResults: maxResults,
+        nextPageToken: nextPageToken,
         fields: [
+          "project",
           "summary",
           "description",
           "issuetype",
