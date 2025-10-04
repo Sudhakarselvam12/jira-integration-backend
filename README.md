@@ -159,11 +159,15 @@ Each sync endpoint calls the `JiraSyncService`, which communicates with the Jira
 ---
 
 ## 🕒 Cron Jobs
-Job	Schedule	Description
-Project Sync	- 0 0 * * *	Syncs all Jira projects daily
-Issue Sync	- 30 0 * * *	Syncs all Jira issues daily
 
-Manual sync is available via API as well.
+| Job | Schedule | Description |
+|:----|:----------|:-------------|
+| **Project Sync** | `0 0 * * *` | Syncs all Jira projects daily |
+| **Issue Sync** | `30 0 * * *` | Syncs all Jira issues daily |
+
+🔹 *Manual sync* is also available anytime via the API endpoints:
+- `POST /sync/projects`
+- `POST /sync/issues`
 
 ---
 
@@ -187,5 +191,3 @@ GitHub: https://github.com/Sudhakarselvam12
 2. Create a branch: git checkout -b feature/<name>
 3. Commit & push, then open a PR
 Please follow the existing lint/format rules and include a short description of changes.
-
----
