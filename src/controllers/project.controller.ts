@@ -11,10 +11,6 @@ export const getAllProjects = async (req: Request, res: Response): Promise<void>
     const offset = (page - 1) * limit;
 
     let projects = await projectService.getAllProjects();
-    if (!projects || projects.length === 0) {
-      res.status(404).json({ message: 'No issues found' });
-      return;
-    }
 
     const total = projects.length;
     projects = projects.slice(offset, offset + limit);
