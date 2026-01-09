@@ -63,6 +63,43 @@ export const issueService = {
     return result;
   },
 
+  extractTextFromADF(adf: any): string {
+    let result = '';
+
+    function walk(node: any) {
+      if (!node) return;
+
+      if (node.type === 'text') {
+        result += node.text;
+      }
+
+      if (node.type === 'paragraph') {
+        result += '\n';
+      }
+
+      if (node.type === 'bulletList') {
+        result += '\n';
+      }
+
+      if (node.type === 'listItem') {
+        result += '• ';
+      }
+
+      if (node.content && Array.isArray(node.content)) {
+        for (const child of node.content) {
+          walk(child);
+        }
+      }
+    }
+
+    if (adf.content) {
+      adf.content.forEach(walk);
+    }
+
+    return result.trim();
+  },
+
+
   async upsertIssue(jiraIssue: JiraIssue): Promise<void> {
     if(!jiraIssue || !jiraIssue.fields) {
       console.warn('Invalid Jira issue data:', jiraIssue);
@@ -74,12 +111,18 @@ export const issueService = {
     const project = await projectRepo.findOneBy({ jiraProjectKey: projectKey });
 
     const auditLogs = [];
+    const rawDesc = jiraIssue.fields.description;
+
+    const descriptionText = rawDesc
+      ? this.extractTextFromADF(rawDesc)
+      : '';
+
 
     if (!existing) {
       const newIssue = issueRepo.create({
         jiraId: jiraIssue.key,
         title: jiraIssue.fields.summary,
-        description: jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '',
+        description: descriptionText,
         type: jiraIssue.fields.issuetype?.name || '',
         status: jiraIssue.fields.status?.name || '',
         priority: jiraIssue.fields.priority?.name || '',
@@ -105,7 +148,7 @@ export const issueService = {
 
       const modifiedIssue : Partial<Issue> = {
         title: jiraIssue.fields.summary,
-        description: jiraIssue.fields.description?.content?.[0]?.content?.[0]?.text || '',
+        description: descriptionText,
         type: jiraIssue.fields.issuetype?.name || '',
         status: jiraIssue.fields.status?.name || '',
         priority: jiraIssue.fields.priority?.name || '',
